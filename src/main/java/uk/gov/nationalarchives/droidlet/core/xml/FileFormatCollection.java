@@ -1,14 +1,35 @@
 package uk.gov.nationalarchives.droidlet.core.xml;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.xml.sax.Attributes;
+
+import uk.gov.nationalarchives.droidlet.core.xml.FileFormat.FileFormatBuilder;
 
 public class FileFormatCollection extends SimpleElement
 {
 	public static class FileFormatCollectionBuilder extends SimpleElementBuilder
 	{
+		private final List<FileFormatBuilder> fileFormatBuilders;
+
 		protected FileFormatCollectionBuilder(Attributes attributes)
 		{
 			super(FileFormatCollection.class.getSimpleName(), attributes);
+			fileFormatBuilders = new ArrayList<>();
+		}
+
+		@Override
+		protected SimpleElementBuilder startChildElementSpecific(String qName, Attributes attributes)
+		{
+			if (FileFormat.class.getSimpleName().equals(qName))
+			{
+				final FileFormatBuilder fileFormatBuilder = new FileFormatBuilder(attributes);
+				fileFormatBuilders.add(fileFormatBuilder);
+				return fileFormatBuilder;
+			}
+
+			return null;
 		}
 	}
 

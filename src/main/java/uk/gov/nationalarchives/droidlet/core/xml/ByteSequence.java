@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.xml.sax.Attributes;
 
-import uk.gov.nationalarchives.droidlet.core.exception.UnexpectedXmlStructureException;
 import uk.gov.nationalarchives.droidlet.core.xml.SubSequence.SubSequenceBuilder;
 
 //import net.byteseek.compiler.CompileException;
@@ -51,7 +50,8 @@ public class ByteSequence extends SimpleElement
 				subSequenceBuilders.add(subSequenceBuilder);
 				return subSequenceBuilder;
 			}
-			throw new UnexpectedXmlStructureException("ByteSequence unexpected child " + qName);
+
+			return null;
 		}
 	}
 

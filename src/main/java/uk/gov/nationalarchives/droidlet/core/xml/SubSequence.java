@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.xml.sax.Attributes;
 
-import uk.gov.nationalarchives.droidlet.core.exception.UnexpectedXmlStructureException;
 import uk.gov.nationalarchives.droidlet.core.xml.DefaultShift.DefaultShiftBuilder;
 import uk.gov.nationalarchives.droidlet.core.xml.LeftFragment.LeftFragmentBuilder;
 import uk.gov.nationalarchives.droidlet.core.xml.RightFragment.RightFragmentBuilder;
@@ -50,23 +49,27 @@ public class SubSequence extends SimpleElement
 				sequenceBuilder = new SequenceBuilder(attributes);
 				return sequenceBuilder;
 			}
+
 			if (DefaultShift.class.getSimpleName().equals(qName))
 			{
 				defaultShiftBuilder = new DefaultShiftBuilder(attributes);
 				return defaultShiftBuilder;
 			}
+
 			if (Shift.class.getSimpleName().equals(qName))
 			{
 				final ShiftBuilder shiftBuilder = new ShiftBuilder(attributes);
 				shiftBuilders.add(shiftBuilder);
 				return shiftBuilder;
 			}
+
 			if (LeftFragment.class.getSimpleName().equals(qName))
 			{
 				final LeftFragmentBuilder leftFragmentBuilder = new LeftFragmentBuilder(attributes);
 				leftFragmentBuilders.add(leftFragmentBuilder);
 				return leftFragmentBuilder;
 			}
+
 			if (RightFragment.class.getSimpleName().equals(qName))
 			{
 				final RightFragmentBuilder rightFragmentBuilder = new RightFragmentBuilder(attributes);
@@ -74,7 +77,7 @@ public class SubSequence extends SimpleElement
 				return rightFragmentBuilder;
 			}
 
-			throw new UnexpectedXmlStructureException("Subsequence unexpected child tag " + qName);
+			return null;
 		}
 	}
 

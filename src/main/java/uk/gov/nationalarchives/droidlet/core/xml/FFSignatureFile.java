@@ -2,7 +2,6 @@ package uk.gov.nationalarchives.droidlet.core.xml;
 
 import org.xml.sax.Attributes;
 
-import uk.gov.nationalarchives.droidlet.core.exception.UnexpectedXmlStructureException;
 import uk.gov.nationalarchives.droidlet.core.xml.FileFormatCollection.FileFormatCollectionBuilder;
 import uk.gov.nationalarchives.droidlet.core.xml.InternalSignatureCollection.InternalSignatureCollectionBuilder;
 
@@ -39,12 +38,14 @@ public class FFSignatureFile extends SimpleElement
 				internalSignatureCollectionBuilder = new InternalSignatureCollectionBuilder(attributes);
 				return internalSignatureCollectionBuilder;
 			}
+
 			if (FileFormatCollection.class.getSimpleName().equals(qName))
 			{
 				fileFormatCollectionBuilder = new FileFormatCollectionBuilder(attributes);
 				return fileFormatCollectionBuilder;
 			}
-			throw new UnexpectedXmlStructureException("FFSignatureFile unexpected child tag " + qName);
+
+			return null;
 		}
 	}
 	//

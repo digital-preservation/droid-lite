@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.xml.sax.Attributes;
 
-import uk.gov.nationalarchives.droidlet.core.exception.UnexpectedXmlStructureException;
 import uk.gov.nationalarchives.droidlet.core.xml.ByteSequence.ByteSequenceBuilder;
 import uk.gov.nationalarchives.droidlet.core.xml.FileFormat.FileFormatBuilder;
 
@@ -55,13 +54,15 @@ public class InternalSignature extends SimpleElement
 				fileFormatBuilders.add(fileFormatBuilder);
 				return fileFormatBuilder;
 			}
+
 			if (ByteSequence.class.getSimpleName().equals(qName))
 			{
 				final ByteSequenceBuilder byteSequenceBuilder = new ByteSequenceBuilder(attributes);
 				byteSequenceBuilders.add(byteSequenceBuilder);
 				return byteSequenceBuilder;
 			}
-			throw new UnexpectedXmlStructureException("InternalSignature unexpected child tag " + qName);
+
+			return null;
 		}
 	}
 

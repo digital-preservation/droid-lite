@@ -8,13 +8,51 @@ import java.util.Set;
 
 import org.xml.sax.Attributes;
 
+import uk.gov.nationalarchives.droidlet.core.xml.Extension.ExtensionBuilder;
+import uk.gov.nationalarchives.droidlet.core.xml.HasPriorityOverFileFormatID.HasPriorityOverFileFormatIDBuilder;
+import uk.gov.nationalarchives.droidlet.core.xml.InternalSignatureID.InternalSignatureIDBuilder;
+
 public class FileFormat extends SimpleElement
 {
 	public static class FileFormatBuilder extends SimpleElementBuilder
 	{
+		final List<InternalSignatureIDBuilder> internalSignatureIDBuilders;
+		final List<ExtensionBuilder> extensionBuilders;
+		final List<HasPriorityOverFileFormatIDBuilder> hasPriorityOverFileFormatIDBuilders;
+
 		public FileFormatBuilder(Attributes attributes)
 		{
 			super(FileFormat.class.getSimpleName(), attributes);
+			internalSignatureIDBuilders = new ArrayList<>();
+			extensionBuilders = new ArrayList<>();
+			hasPriorityOverFileFormatIDBuilders = new ArrayList<>();
+		}
+
+		@Override
+		protected SimpleElementBuilder startChildElementSpecific(String qName, Attributes attributes)
+		{
+			if (InternalSignatureID.class.getSimpleName().equals(qName))
+			{
+				final InternalSignatureIDBuilder internalSignatureIDBuilder = new InternalSignatureIDBuilder(attributes);
+				internalSignatureIDBuilders.add(internalSignatureIDBuilder);
+				return internalSignatureIDBuilder;
+			}
+
+			if (Extension.class.getSimpleName().equals(qName))
+			{
+				final ExtensionBuilder extensionBuilder = new ExtensionBuilder(attributes);
+				extensionBuilders.add(extensionBuilder);
+				return extensionBuilder;
+			}
+
+			if (HasPriorityOverFileFormatID.class.getSimpleName().equals(qName))
+			{
+				final HasPriorityOverFileFormatIDBuilder hasPriorityOverFileFormatIDBuilder = new HasPriorityOverFileFormatIDBuilder(attributes);
+				hasPriorityOverFileFormatIDBuilders.add(hasPriorityOverFileFormatIDBuilder);
+				return hasPriorityOverFileFormatIDBuilder;
+			}
+
+			return null;
 		}
 	}
 

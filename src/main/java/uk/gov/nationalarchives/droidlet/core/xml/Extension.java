@@ -10,7 +10,7 @@ public class Extension extends SimpleElement
 	{
 		protected ExtensionBuilder(Attributes attributes)
 		{
-			super(ExtensionBuilder.class.getSimpleName(), attributes);
+			super(Extension.class.getSimpleName(), attributes);
 		}
 	}
 }

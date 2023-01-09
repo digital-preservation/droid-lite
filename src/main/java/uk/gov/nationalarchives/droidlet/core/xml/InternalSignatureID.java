@@ -8,7 +8,8 @@ public class InternalSignatureID extends SimpleElement
 	{
 		protected InternalSignatureIDBuilder(Attributes attributes)
 		{
-			super(InternalSignatureIDBuilder.class.getSimpleName(), attributes);
+			super(InternalSignatureID.class.getSimpleName(), attributes);
 		}
 	}
+
 }

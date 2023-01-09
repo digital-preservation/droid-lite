@@ -34,6 +34,10 @@ public abstract class SimpleElement
 
 			// There is no child so we give subclasses a chance to handle it
 			currentChildBuilder = startChildElementSpecific(qName, attributes);
+
+			// Check that the subclass was expecting the child tag
+			if (currentChildBuilder == null)
+				throw new UnexpectedXmlStructureException("Unexpected child tag " + this.qName + "->" + qName);
 		}
 
 		public void endElement(String qName)
