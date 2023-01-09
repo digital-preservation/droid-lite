@@ -3,6 +3,8 @@ package uk.gov.nationalarchives.droidlet.core.xml;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.xml.sax.Attributes;
+
 /**
  * A SubSequence is an extended byte-string to match.
  *
@@ -19,7 +21,7 @@ public class SubSequence extends SimpleElement
 {
 	public static class SubSequenceBuilder extends SimpleElementBuilder
 	{
-		public SubSequenceBuilder()
+		public SubSequenceBuilder(Attributes attributes)
 		{
 			super("SubSequence");
 		}

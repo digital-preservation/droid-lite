@@ -6,11 +6,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.xml.sax.Attributes;
+
 public class FileFormat extends SimpleElement
 {
 	public static class FileFormatBuilder extends SimpleElementBuilder
 	{
-		public FileFormatBuilder()
+		public FileFormatBuilder(Attributes attributes)
 		{
 			super("FileFormat");
 		}

@@ -3,6 +3,11 @@ package uk.gov.nationalarchives.droidlet.core.xml;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.xml.sax.Attributes;
+
+import uk.gov.nationalarchives.droidlet.core.exception.UnexpectedXmlStructureException;
+import uk.gov.nationalarchives.droidlet.core.xml.SubSequence.SubSequenceBuilder;
+
 //import net.byteseek.compiler.CompileException;
 //import net.byteseek.io.reader.WindowReader;
 //import uk.gov.nationalarchives.droid.core.signature.ByteReader;
@@ -29,16 +34,24 @@ public class ByteSequence extends SimpleElement
 {
 	public static class ByteSequenceBuilder extends SimpleElementBuilder
 	{
-		public ByteSequenceBuilder()
+		private final List<SubSequenceBuilder> subSequenceBuilders;
+
+		public ByteSequenceBuilder(Attributes attributes)
 		{
 			super("ByteSequence");
+			subSequenceBuilders = new ArrayList<>();
 		}
 
 		@Override
-		protected void addTextSpecific(String string)
+		protected SimpleElementBuilder startChildElementSpecific(String qName, Attributes attributes)
 		{
-			// TODO Auto-generated method stub
-
+			if (SubSequence.class.getSimpleName().equals(qName))
+			{
+				final SubSequenceBuilder subSequenceBuilder = new SubSequenceBuilder(attributes);
+				subSequenceBuilders.add(subSequenceBuilder);
+				return subSequenceBuilder;
+			}
+			throw new UnexpectedXmlStructureException();
 		}
 	}
 

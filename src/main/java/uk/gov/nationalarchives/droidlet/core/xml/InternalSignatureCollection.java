@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.xml.sax.Attributes;
 
+import uk.gov.nationalarchives.droidlet.core.exception.UnexpectedXmlStructureException;
 import uk.gov.nationalarchives.droidlet.core.xml.InternalSignature.InternalSignatureBuilder;
 
 //import uk.gov.nationalarchives.droid.core.signature.ByteReader;
@@ -18,8 +19,20 @@ public class InternalSignatureCollection extends SimpleElement
 
 		public InternalSignatureCollectionBuilder(Attributes attributes)
 		{
-			super("InternalSignatureCollection");
+			super(InternalSignatureCollection.class.getSimpleName());
 			internalSignatureBuilders = new ArrayList<>();
+		}
+
+		@Override
+		protected SimpleElementBuilder startChildElementSpecific(String qName, Attributes attributes)
+		{
+			if (InternalSignature.class.getSimpleName().equals(qName))
+			{
+				final InternalSignatureBuilder internalSignatureBuilder = new InternalSignatureBuilder(attributes);
+				internalSignatureBuilders.add(internalSignatureBuilder);
+				return internalSignatureBuilder;
+			}
+			throw new UnexpectedXmlStructureException();
 		}
 	}
 

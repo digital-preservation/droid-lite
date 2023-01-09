@@ -3,6 +3,12 @@ package uk.gov.nationalarchives.droidlet.core.xml;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.xml.sax.Attributes;
+
+import uk.gov.nationalarchives.droidlet.core.exception.UnexpectedXmlStructureException;
+import uk.gov.nationalarchives.droidlet.core.xml.ByteSequence.ByteSequenceBuilder;
+import uk.gov.nationalarchives.droidlet.core.xml.FileFormat.FileFormatBuilder;
+
 /**
  * A binary signature which can match one or more file formats.
  * 
@@ -30,9 +36,32 @@ public class InternalSignature extends SimpleElement
 {
 	public static class InternalSignatureBuilder extends SimpleElementBuilder
 	{
-		protected InternalSignatureBuilder()
+		private List<FileFormatBuilder> fileFormatBuilders;
+		private List<ByteSequenceBuilder> byteSequenceBuilders;
+
+		protected InternalSignatureBuilder(Attributes attributes)
 		{
 			super("InternalSignature");
+			fileFormatBuilders = new ArrayList<>();
+			byteSequenceBuilders = new ArrayList<>();
+		}
+
+		@Override
+		protected SimpleElementBuilder startChildElementSpecific(String qName, Attributes attributes)
+		{
+			if (FileFormat.class.getSimpleName().equals(qName))
+			{
+				final FileFormatBuilder fileFormatBuilder = new FileFormatBuilder(attributes);
+				fileFormatBuilders.add(fileFormatBuilder);
+				return fileFormatBuilder;
+			}
+			if (ByteSequence.class.getSimpleName().equals(qName))
+			{
+				final ByteSequenceBuilder byteSequenceBuilder = new ByteSequenceBuilder(attributes);
+				byteSequenceBuilders.add(byteSequenceBuilder);
+				return byteSequenceBuilder;
+			}
+			throw new UnexpectedXmlStructureException();
 		}
 	}
 

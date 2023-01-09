@@ -26,7 +26,7 @@ public class FFSignatureFile extends SimpleElement
 
 		public FFSignatureFileBuilder(Attributes attributes)
 		{
-			super("FFSignatureFile");
+			super(FFSignatureFileBuilder.class.getSimpleName());
 			dateCreated = attributes.getValue("DateCreated");
 			version = attributes.getValue("Version");
 		}
@@ -34,12 +34,12 @@ public class FFSignatureFile extends SimpleElement
 		@Override
 		protected SimpleElementBuilder startChildElementSpecific(String qName, Attributes attributes)
 		{
-			if ("InternalSignatureCollection".equals(qName))
+			if (InternalSignatureCollection.class.getSimpleName().equals(qName))
 			{
 				internalSignatureCollectionBuilder = new InternalSignatureCollectionBuilder(attributes);
 				return internalSignatureCollectionBuilder;
 			}
-			if ("FileFormatCollection".equals(qName))
+			if (FileFormatCollection.class.getSimpleName().equals(qName))
 			{
 				fileFormatCollectionBuilder = new FileFormatCollectionBuilder(attributes);
 				return fileFormatCollectionBuilder;
