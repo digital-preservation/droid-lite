@@ -1,5 +1,7 @@
 package uk.gov.nationalarchives.droidlet.core.xml;
 
+import org.xml.sax.Attributes;
+
 /**
  * A left fragment is all the parts of a byte sequence to the left of an
  * anchoring subsequence. These parts cannot be searched for using the fast
@@ -17,5 +19,11 @@ package uk.gov.nationalarchives.droidlet.core.xml;
  */
 public class LeftFragment extends SideFragment
 {
-
+	public static class LeftFragmentBuilder extends SideFragmentBuilder
+	{
+		protected LeftFragmentBuilder(Attributes attributes)
+		{
+			super(LeftFragment.class.getSimpleName(), attributes);
+		}
+	}
 }

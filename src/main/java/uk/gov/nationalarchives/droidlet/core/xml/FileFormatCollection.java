@@ -8,7 +8,7 @@ public class FileFormatCollection extends SimpleElement
 	{
 		protected FileFormatCollectionBuilder(Attributes attributes)
 		{
-			super("FileFormatCollection");
+			super(FileFormatCollection.class.getSimpleName(), attributes);
 		}
 	}
 

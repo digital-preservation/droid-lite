@@ -36,12 +36,12 @@ public class InternalSignature extends SimpleElement
 {
 	public static class InternalSignatureBuilder extends SimpleElementBuilder
 	{
-		private List<FileFormatBuilder> fileFormatBuilders;
-		private List<ByteSequenceBuilder> byteSequenceBuilders;
+		private final List<FileFormatBuilder> fileFormatBuilders;
+		private final List<ByteSequenceBuilder> byteSequenceBuilders;
 
 		protected InternalSignatureBuilder(Attributes attributes)
 		{
-			super("InternalSignature");
+			super(InternalSignature.class.getSimpleName(), attributes);
 			fileFormatBuilders = new ArrayList<>();
 			byteSequenceBuilders = new ArrayList<>();
 		}
@@ -61,7 +61,7 @@ public class InternalSignature extends SimpleElement
 				byteSequenceBuilders.add(byteSequenceBuilder);
 				return byteSequenceBuilder;
 			}
-			throw new UnexpectedXmlStructureException();
+			throw new UnexpectedXmlStructureException("InternalSignature unexpected child tag " + qName);
 		}
 	}
 
@@ -91,7 +91,7 @@ public class InternalSignature extends SimpleElement
 	 */
 	private static final String SPACE = " ";
 
-	private List<ByteSequence> byteSequences = new ArrayList<ByteSequence>();
+	private final List<ByteSequence> byteSequences = new ArrayList<ByteSequence>();
 	private int intSigID;
 	private boolean specificity;
 	private final List<FileFormat> fileFormatList = new ArrayList<FileFormat>();

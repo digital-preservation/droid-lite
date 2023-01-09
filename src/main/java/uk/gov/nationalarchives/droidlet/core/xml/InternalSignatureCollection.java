@@ -19,7 +19,7 @@ public class InternalSignatureCollection extends SimpleElement
 
 		public InternalSignatureCollectionBuilder(Attributes attributes)
 		{
-			super(InternalSignatureCollection.class.getSimpleName());
+			super(InternalSignatureCollection.class.getSimpleName(), attributes);
 			internalSignatureBuilders = new ArrayList<>();
 		}
 
@@ -32,7 +32,7 @@ public class InternalSignatureCollection extends SimpleElement
 				internalSignatureBuilders.add(internalSignatureBuilder);
 				return internalSignatureBuilder;
 			}
-			throw new UnexpectedXmlStructureException();
+			throw new UnexpectedXmlStructureException("InternalSignatureCollection unexpected child tag " + qName);
 		}
 	}
 

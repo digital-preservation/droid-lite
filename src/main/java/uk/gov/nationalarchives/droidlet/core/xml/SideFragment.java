@@ -1,5 +1,7 @@
 package uk.gov.nationalarchives.droidlet.core.xml;
 
+import org.xml.sax.Attributes;
+
 //import net.byteseek.compiler.CompileException;
 //import net.byteseek.compiler.matcher.SequenceMatcherCompiler;
 //import net.byteseek.io.reader.WindowReader;
@@ -22,8 +24,22 @@ package uk.gov.nationalarchives.droidlet.core.xml;
  * </p>
  *
  */
-public class SideFragment extends SimpleElement
+public abstract class SideFragment extends SimpleElement
 {
+	public abstract static class SideFragmentBuilder extends SimpleElementBuilder
+	{
+		int maxOffset;
+		int minOffset;
+		int position;
+
+		protected SideFragmentBuilder(String qName, Attributes attributes)
+		{
+			super(qName, attributes);
+			maxOffset = getIntAttributeValue("MaxOffset");
+			minOffset = getIntAttributeValue("MinOffset");
+			position = getIntAttributeValue("Position");
+		}
+	}
 
 	private static final String FRAGMENT_PARSE_ERROR = "The signature fragment [%s] could not be parsed. " + "The error returned was [%s]";
 

@@ -38,7 +38,7 @@ public class ByteSequence extends SimpleElement
 
 		public ByteSequenceBuilder(Attributes attributes)
 		{
-			super("ByteSequence");
+			super(ByteSequence.class.getSimpleName(), attributes);
 			subSequenceBuilders = new ArrayList<>();
 		}
 
@@ -51,7 +51,7 @@ public class ByteSequence extends SimpleElement
 				subSequenceBuilders.add(subSequenceBuilder);
 				return subSequenceBuilder;
 			}
-			throw new UnexpectedXmlStructureException();
+			throw new UnexpectedXmlStructureException("ByteSequence unexpected child " + qName);
 		}
 	}
 
@@ -114,11 +114,11 @@ public class ByteSequence extends SimpleElement
 	 */
 	private static final String BYTE_READ_ERROR = "An error occurred reading a byte at positionInFile ";
 
-	private List<SubSequence> subSequences = new ArrayList<SubSequence>();
-	private SubSequence[] sequences = new SubSequence[0];
-	private String reference = "Variable";
-	private boolean bigEndian = true; // Assume a signature is big-endian unless
-	                                  // we are told to the contrary.
+	private final List<SubSequence> subSequences = new ArrayList<SubSequence>();
+	private final SubSequence[] sequences = new SubSequence[0];
+	private final String reference = "Variable";
+	private final boolean bigEndian = true; // Assume a signature is big-endian unless
+	// we are told to the contrary.
 	private boolean hasIndirectOffset;
 	private boolean anchoredToBOF;
 	private boolean anchoredToEOF;
@@ -135,7 +135,7 @@ public class ByteSequence extends SimpleElement
 	 * be set for most ByteSequences, but can be set from the signature XML
 	 * using a Sequence attribute on a ByteSequence element.
 	 */
-	private String sequence = "";
+	private final String sequence = "";
 
 	/**
 	 * Whether the bytesequence is prepared for use or not. The flag intends to

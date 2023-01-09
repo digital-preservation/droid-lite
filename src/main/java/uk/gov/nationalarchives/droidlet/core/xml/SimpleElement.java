@@ -13,10 +13,12 @@ public abstract class SimpleElement
 	{
 		private SimpleElementBuilder currentChildBuilder = null;
 		private final String qName;
+		private final Attributes attributes;
 
-		protected SimpleElementBuilder(String qName)
+		protected SimpleElementBuilder(String qName, Attributes attributes)
 		{
 			this.qName = qName;
+			this.attributes = attributes;
 		}
 
 		public void startElement(String qName, Attributes attributes)
@@ -27,6 +29,8 @@ public abstract class SimpleElement
 				currentChildBuilder.startElement(qName, attributes);
 				return;
 			}
+
+			System.out.println("<" + qName + ">" + attributes.getValue("ID"));
 
 			// There is no child so we give subclasses a chance to handle it
 			currentChildBuilder = startChildElementSpecific(qName, attributes);
@@ -57,12 +61,27 @@ public abstract class SimpleElement
 
 		protected SimpleElementBuilder startChildElementSpecific(String qName, Attributes attributes)
 		{
-			throw new UnexpectedXmlStructureException();
+			throw new UnexpectedXmlStructureException("Unhandled child tag " + this.qName + "->" + qName);
 		}
 
 		protected void addTextSpecific(String string)
 		{
 			// Do nothing
+		}
+
+		protected int getIntAttributeValue(String attributeName)
+		{
+			final String stringValue = attributes.getValue(attributeName);
+			if (stringValue == null)
+				throw new UnexpectedXmlStructureException("Missing integer attribute " + attributeName);
+			try
+			{
+				return Integer.parseInt(stringValue);
+			}
+			catch (final NumberFormatException exception)
+			{
+				throw new UnexpectedXmlStructureException("Error parsing integer value for " + stringValue);
+			}
 		}
 	}
 }

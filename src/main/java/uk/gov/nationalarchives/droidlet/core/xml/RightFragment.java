@@ -1,5 +1,7 @@
 package uk.gov.nationalarchives.droidlet.core.xml;
 
+import org.xml.sax.Attributes;
+
 /**
  * A right fragment is all the parts of a byte sequence to the right of an
  * anchoring subsequence. These parts cannot be searched for using the fast
@@ -17,5 +19,11 @@ package uk.gov.nationalarchives.droidlet.core.xml;
  */
 public class RightFragment extends SideFragment
 {
-
+	public static class RightFragmentBuilder extends SideFragmentBuilder
+	{
+		protected RightFragmentBuilder(Attributes attributes)
+		{
+			super(RightFragment.class.getSimpleName(), attributes);
+		}
+	}
 }

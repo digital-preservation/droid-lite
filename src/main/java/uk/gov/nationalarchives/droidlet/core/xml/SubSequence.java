@@ -5,6 +5,13 @@ import java.util.List;
 
 import org.xml.sax.Attributes;
 
+import uk.gov.nationalarchives.droidlet.core.exception.UnexpectedXmlStructureException;
+import uk.gov.nationalarchives.droidlet.core.xml.DefaultShift.DefaultShiftBuilder;
+import uk.gov.nationalarchives.droidlet.core.xml.LeftFragment.LeftFragmentBuilder;
+import uk.gov.nationalarchives.droidlet.core.xml.RightFragment.RightFragmentBuilder;
+import uk.gov.nationalarchives.droidlet.core.xml.Sequence.SequenceBuilder;
+import uk.gov.nationalarchives.droidlet.core.xml.Shift.ShiftBuilder;
+
 /**
  * A SubSequence is an extended byte-string to match.
  *
@@ -21,9 +28,53 @@ public class SubSequence extends SimpleElement
 {
 	public static class SubSequenceBuilder extends SimpleElementBuilder
 	{
+		private SequenceBuilder sequenceBuilder;
+		private DefaultShiftBuilder defaultShiftBuilder;
+		private final List<ShiftBuilder> shiftBuilders;
+		private final List<LeftFragmentBuilder> leftFragmentBuilders;
+		private final List<RightFragmentBuilder> rightFragmentBuilders;
+
 		public SubSequenceBuilder(Attributes attributes)
 		{
-			super("SubSequence");
+			super(SubSequence.class.getSimpleName(), attributes);
+			shiftBuilders = new ArrayList<>();
+			leftFragmentBuilders = new ArrayList<>();
+			rightFragmentBuilders = new ArrayList<>();
+		}
+
+		@Override
+		protected SimpleElementBuilder startChildElementSpecific(String qName, Attributes attributes)
+		{
+			if (Sequence.class.getSimpleName().equals(qName))
+			{
+				sequenceBuilder = new SequenceBuilder(attributes);
+				return sequenceBuilder;
+			}
+			if (DefaultShift.class.getSimpleName().equals(qName))
+			{
+				defaultShiftBuilder = new DefaultShiftBuilder(attributes);
+				return defaultShiftBuilder;
+			}
+			if (Shift.class.getSimpleName().equals(qName))
+			{
+				final ShiftBuilder shiftBuilder = new ShiftBuilder(attributes);
+				shiftBuilders.add(shiftBuilder);
+				return shiftBuilder;
+			}
+			if (LeftFragment.class.getSimpleName().equals(qName))
+			{
+				final LeftFragmentBuilder leftFragmentBuilder = new LeftFragmentBuilder(attributes);
+				leftFragmentBuilders.add(leftFragmentBuilder);
+				return leftFragmentBuilder;
+			}
+			if (RightFragment.class.getSimpleName().equals(qName))
+			{
+				final RightFragmentBuilder rightFragmentBuilder = new RightFragmentBuilder(attributes);
+				rightFragmentBuilders.add(rightFragmentBuilder);
+				return rightFragmentBuilder;
+			}
+
+			throw new UnexpectedXmlStructureException("Subsequence unexpected child tag " + qName);
 		}
 	}
 
@@ -43,8 +94,8 @@ public class SubSequence extends SimpleElement
 	private int numLeftFragmentPositions;
 	private int numRightFragmentPositions;
 	private boolean fullFileScan;
-	private List<LeftFragment> leftFragments = new ArrayList<LeftFragment>();
-	private List<RightFragment> rightFragments = new ArrayList<RightFragment>();
+	private final List<LeftFragment> leftFragments = new ArrayList<LeftFragment>();
+	private final List<RightFragment> rightFragments = new ArrayList<RightFragment>();
 	//	private SequenceMatcher matcher;
 	//	private Searcher searcher;
 	private final List<List<SideFragment>> orderedLeftFragments = new ArrayList<List<SideFragment>>();

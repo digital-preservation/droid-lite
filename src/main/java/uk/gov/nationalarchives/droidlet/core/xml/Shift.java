@@ -13,7 +13,7 @@ public class Shift extends SimpleElement
 	{
 		protected ShiftBuilder(Attributes attributes)
 		{
-			super(Shift.class.getSimpleName());
+			super(Shift.class.getSimpleName(), attributes);
 		}
 	}
 }

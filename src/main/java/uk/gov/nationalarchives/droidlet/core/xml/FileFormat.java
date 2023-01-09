@@ -14,7 +14,7 @@ public class FileFormat extends SimpleElement
 	{
 		public FileFormatBuilder(Attributes attributes)
 		{
-			super("FileFormat");
+			super(FileFormat.class.getSimpleName(), attributes);
 		}
 	}
 
