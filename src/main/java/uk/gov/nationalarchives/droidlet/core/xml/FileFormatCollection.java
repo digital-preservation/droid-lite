@@ -1,6 +1,7 @@
 package uk.gov.nationalarchives.droidlet.core.xml;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.xml.sax.Attributes;
@@ -31,9 +32,24 @@ public class FileFormatCollection extends SimpleElement
 
 			return null;
 		}
+
+		@Override
+		public FileFormatCollection build()
+		{
+			return new FileFormatCollection(this);
+		}
 	}
 
-	//	private List<FileFormat> formats = new ArrayList<FileFormat>();
+	private final List<FileFormat> formats;
+
+	private FileFormatCollection(FileFormatCollectionBuilder fileFormatCollectionBuilder)
+	{
+		final List<FileFormat> fileFormatsStaging = new ArrayList<>();
+		for (final FileFormatBuilder fileFormatBuilder : fileFormatCollectionBuilder.fileFormatBuilders)
+			fileFormatsStaging.add(fileFormatBuilder.build());
+		formats = Collections.unmodifiableList(fileFormatsStaging);
+	}
+
 	//	private Map<String, FileFormat> puidFormats = new HashMap<String, FileFormat>();
 	//
 	//	/* setters */
@@ -49,7 +65,7 @@ public class FileFormatCollection extends SimpleElement
 	//	}
 	//
 	//	/**
-	//	 * 
+	//	 *
 	//	 * @param formatList
 	//	 *            A list of file formats to set for the collection.
 	//	 */
@@ -74,7 +90,7 @@ public class FileFormatCollection extends SimpleElement
 	//	}
 	//
 	//	/**
-	//	 * 
+	//	 *
 	//	 * @param puid
 	//	 *            The puid
 	//	 * @return A file format for that puid.

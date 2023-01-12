@@ -13,35 +13,31 @@ import org.xml.sax.Attributes;
 //import uk.gov.nationalarchives.droid.core.signature.xml.SimpleElement;
 
 /**
- * A SideFragment is any fragment of a subsequence which cannot be searched for
- * using the BoyerHooreHorspool algorithm. Typically, this means parts of the
- * subsequence with gaps {n-m}, and alternatives (A|B|C).
- * 
+ * A SideFragment is any fragment of a subsequence which cannot be searched for using the BoyerHooreHorspool algorithm. Typically, this means parts of the subsequence with gaps {n-m}, and alternatives (A|B|C).
+ *
  * <p>
- * A subsequence is defined by the longest anchoring sequence which can be
- * searched for, with any side fragments to the left and right of it checked for
- * after the anchoring sequence is found.
+ * A subsequence is defined by the longest anchoring sequence which can be searched for, with any side fragments to the left and right of it checked for after the anchoring sequence is found.
  * </p>
  *
  */
 public abstract class SideFragment extends SimpleElement
 {
+	private static final String FRAGMENT_PARSE_ERROR = "The signature fragment [%s] could not be parsed. The error returned was [%s]";
+
 	public abstract static class SideFragmentBuilder extends SimpleElementBuilder
 	{
-		int maxOffset;
-		int minOffset;
-		int position;
+		final int maxOffset;
+		final int minOffset;
+		final int position;
 
 		protected SideFragmentBuilder(String qName, Attributes attributes)
 		{
 			super(qName, attributes);
-			maxOffset = getIntAttributeValue("MaxOffset");
-			minOffset = getIntAttributeValue("MinOffset");
-			position = getIntAttributeValue("Position");
+			maxOffset = Integer.parseInt(attributes.getValue("MaxOffset"));
+			minOffset = Integer.parseInt(attributes.getValue("MinOffset"));
+			position = Integer.parseInt(attributes.getValue("Position"));
 		}
 	}
-
-	private static final String FRAGMENT_PARSE_ERROR = "The signature fragment [%s] could not be parsed. " + "The error returned was [%s]";
 
 	//	private static final SequenceMatcherCompiler EXPRESSION_COMPILER = new SequenceMatcherCompiler();
 
@@ -91,7 +87,7 @@ public abstract class SideFragment extends SimpleElement
 	//	 * @param thePosition
 	//	 *            the positionInFile of the fragment in the list of
 	//	 *            SideFragments held to the left or right of a subsequence.
-	//	 * 
+	//	 *
 	//	 *            Individual fragments can have the same positionInFile as each
 	//	 *            other - this is how alternatives are represented - as
 	//	 *            different fragments with the same positionInFile.
@@ -104,7 +100,7 @@ public abstract class SideFragment extends SimpleElement
 	//	/**
 	//	 * A minimum offset is the amount of bytes to skip before looking for this
 	//	 * fragment.
-	//	 * 
+	//	 *
 	//	 * @param theMinOffset
 	//	 *            The minimum offset to begin looking for this fragment.
 	//	 */
@@ -122,7 +118,7 @@ public abstract class SideFragment extends SimpleElement
 	//	 * A maximum offset is the largest amount of bytes to look in for this
 	//	 * fragment. If the maximum offset is greater than the minimum offset, then
 	//	 * a range of bytes will be searched for this fragment.
-	//	 * 
+	//	 *
 	//	 * @param theMaxOffset
 	//	 *            The maximum offset to begin lookiing for this fragment.
 	//	 */
@@ -137,7 +133,7 @@ public abstract class SideFragment extends SimpleElement
 	//	}
 	//
 	//	/**
-	//	 * 
+	//	 *
 	//	 * @param expression
 	//	 *            The regular expression defining the fragment.
 	//	 */
@@ -181,7 +177,7 @@ public abstract class SideFragment extends SimpleElement
 	//	}
 	//
 	//	/**
-	//	 * 
+	//	 *
 	//	 * @return Whether the fragment managed to be assembled correctly.
 	//	 */
 	//	public boolean isInvalidFragment()
@@ -214,7 +210,7 @@ public abstract class SideFragment extends SimpleElement
 	//
 	//	/* getters */
 	//	/**
-	//	 * 
+	//	 *
 	//	 * @return the positionInFile of this fragment.
 	//	 */
 	//	public final int getPosition()
@@ -225,7 +221,7 @@ public abstract class SideFragment extends SimpleElement
 	//	/**
 	//	 * A minimum offset is the amount of bytes to skip before looking for this
 	//	 * fragment.
-	//	 * 
+	//	 *
 	//	 * @return The minimum offset to begin looking for this fragment.
 	//	 */
 	//	public final int getMinOffset()
@@ -237,7 +233,7 @@ public abstract class SideFragment extends SimpleElement
 	//	 * A maximum offset is the largest amount of bytes to look in for this
 	//	 * fragment. If the maximum offset is greater than the minimum offset, then
 	//	 * a range of bytes will be searched for this fragment.
-	//	 * 
+	//	 *
 	//	 * @return The maximum offset to look for this fragment.
 	//	 */
 	//	public final int getMaxOffset()
@@ -246,7 +242,7 @@ public abstract class SideFragment extends SimpleElement
 	//	}
 	//
 	//	/**
-	//	 * 
+	//	 *
 	//	 * @return The number of bytes matched by this fragment.
 	//	 */
 	//	public final int getNumBytes()
@@ -267,7 +263,7 @@ public abstract class SideFragment extends SimpleElement
 	//
 	//	/**
 	//	 * Matches the fragment against the positionInFile in the ByteReader given.
-	//	 * 
+	//	 *
 	//	 * @param bytes
 	//	 *            The byte reader to match the bytes with.
 	//	 * @param matchFrom
@@ -319,7 +315,7 @@ public abstract class SideFragment extends SimpleElement
 	//
 	//	/**
 	//	 * Returns a regular expression representation of this fragment.
-	//	 * 
+	//	 *
 	//	 * @param prettyPrint
 	//	 *            whether to pretty print the regular expression.
 	//	 * @return a regular expression defining this fragment, but minus any
@@ -344,7 +340,7 @@ public abstract class SideFragment extends SimpleElement
 	//
 	//	/**
 	//	 * Creates a clone of the side fragment on whihc it is invoked.
-	//	 * 
+	//	 *
 	//	 * @return A deep clone of the target SideFragment
 	//	 */
 	//	public SideFragment copy()

@@ -1,6 +1,7 @@
 package uk.gov.nationalarchives.droidlet.core.xml;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.xml.sax.Attributes;
@@ -34,19 +35,30 @@ public class InternalSignatureCollection extends SimpleElement
 
 			return null;
 		}
+
+		@Override
+		public InternalSignatureCollection build()
+		{
+			return new InternalSignatureCollection(this);
+		}
 	}
 
-	//	// BNO there is one instance of this for the entire profile - not each
-	//	// request
-	//	private static final int DEFAULT_COLLECTION_SIZE = 10;
-	//
-	//	private List<InternalSignature> internalSignatures = new ArrayList<InternalSignature>(DEFAULT_COLLECTION_SIZE);
+	private final List<InternalSignature> internalSignatures;
+
+	public InternalSignatureCollection(InternalSignatureCollectionBuilder internalSignatureCollectionBuilder)
+	{
+		final List<InternalSignature> stagingList = new ArrayList<>();
+		for (final InternalSignatureBuilder internalSignatureBuilder : internalSignatureCollectionBuilder.internalSignatureBuilders)
+			stagingList.add(internalSignatureBuilder.build());
+		internalSignatures = Collections.unmodifiableList(stagingList);
+	}
+
 	//	private Map<Integer, InternalSignature> sigsByID = new HashMap<Integer, InternalSignature>();
 	//
 	//	/**
 	//	 * Runs all the signatures against the target file, adding a hit for each of
 	//	 * them, if any of them match.
-	//	 * 
+	//	 *
 	//	 * @param targetFile
 	//	 *            The file to match the signatures against.
 	//	 * @param maxBytesToScan
@@ -101,7 +113,7 @@ public class InternalSignatureCollection extends SimpleElement
 	//	}
 	//
 	//	/**
-	//	 * 
+	//	 *
 	//	 * @param iSig
 	//	 *            The signature to remove.
 	//	 */
@@ -112,7 +124,7 @@ public class InternalSignatureCollection extends SimpleElement
 	//	}
 	//
 	//	/**
-	//	 * 
+	//	 *
 	//	 * @param signatureID
 	//	 *            The id of the signature to get
 	//	 * @return The signature with the given id, or null if the signature does
@@ -124,7 +136,7 @@ public class InternalSignatureCollection extends SimpleElement
 	//	}
 	//
 	//	/**
-	//	 * 
+	//	 *
 	//	 * @param iSigs
 	//	 *            The list of signatures to add.
 	//	 */
@@ -141,7 +153,7 @@ public class InternalSignatureCollection extends SimpleElement
 	//	/* getters */
 	//	/**
 	//	 * A list of internal signatures in the collection.
-	//	 * 
+	//	 *
 	//	 * @return A list of internal signatures in the collection.
 	//	 */
 	//	public final List<InternalSignature> getInternalSignatures()
@@ -151,7 +163,7 @@ public class InternalSignatureCollection extends SimpleElement
 	//
 	//	/**
 	//	 * Sorts the signatures in an order which maximises performance.
-	//	 * 
+	//	 *
 	//	 * @param compareWith
 	//	 *            the internal signature comparator to compare with.
 	//	 */

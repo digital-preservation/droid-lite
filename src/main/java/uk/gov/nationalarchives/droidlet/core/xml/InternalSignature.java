@@ -1,6 +1,7 @@
 package uk.gov.nationalarchives.droidlet.core.xml;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.xml.sax.Attributes;
@@ -10,26 +11,12 @@ import uk.gov.nationalarchives.droidlet.core.xml.FileFormat.FileFormatBuilder;
 
 /**
  * A binary signature which can match one or more file formats.
- * 
- * <p>
- * It is composed of a list of {@link ByteSequence} objects, which are like
- * regular expressions that can match bytes.
- * </p>
- * 
- * <p>
- * A signature runs each ByteSequence against a target file, until one of them
- * doesn't match, or all of them do.
- * </p>
- * 
- * <p>
- * It orders the ByteSequence objects to try to ensure optimal matching
- * behaviour - e.g. the ones anchored to the start of the file are done before
- * ones at the end of the file.
- * </p>
  *
- * @author Martin Waller
- * @author Matt Palmer
- * @version 6.0.0
+ * It is composed of a list of {@link ByteSequence} objects, which are like regular expressions that can match bytes.
+ *
+ * A signature runs each ByteSequence against a target file, until one of them doesn't match, or all of them do.
+ *
+ * It orders the ByteSequence objects to try to ensure optimal matching behaviour - e.g. the ones anchored to the start of the file are done before ones at the end of the file.
  */
 public class InternalSignature extends SimpleElement
 {
@@ -38,11 +25,16 @@ public class InternalSignature extends SimpleElement
 		private final List<FileFormatBuilder> fileFormatBuilders;
 		private final List<ByteSequenceBuilder> byteSequenceBuilders;
 
+		private final String specificity;
+		private final int id;
+
 		protected InternalSignatureBuilder(Attributes attributes)
 		{
 			super(InternalSignature.class.getSimpleName(), attributes);
 			fileFormatBuilders = new ArrayList<>();
 			byteSequenceBuilders = new ArrayList<>();
+			specificity = attributes.getValue("Specificity");
+			id = Integer.parseInt(attributes.getValue("ID"));
 		}
 
 		@Override
@@ -63,6 +55,12 @@ public class InternalSignature extends SimpleElement
 			}
 
 			return null;
+		}
+
+		@Override
+		public InternalSignature build()
+		{
+			return new InternalSignature(this);
 		}
 	}
 
@@ -92,26 +90,23 @@ public class InternalSignature extends SimpleElement
 	 */
 	private static final String SPACE = " ";
 
-	private final List<ByteSequence> byteSequences = new ArrayList<ByteSequence>();
+	private final List<ByteSequence> byteSequences;
 	private int intSigID;
 	private boolean specificity;
 	private final List<FileFormat> fileFormatList = new ArrayList<FileFormat>();
 	private int sortOrder;
 	private boolean isInvalidSignature;
 
-	//	/* setters */
+	public InternalSignature(InternalSignatureBuilder internalSignatureBuilder)
+	{
+		final List<ByteSequence> stagingByteSequenceBuilders = new ArrayList<>();
+		for (final ByteSequenceBuilder byteSequenceBuilder : internalSignatureBuilder.byteSequenceBuilders)
+			stagingByteSequenceBuilders.add(byteSequenceBuilder.build());
+		byteSequences = Collections.unmodifiableList(stagingByteSequenceBuilders);
+	}
+
 	//	/**
-	//	 * @param byteSequence
-	//	 *            A byte sequence to add to the internal signature.
 	//	 *
-	//	 */
-	//	public final void addByteSequence(final ByteSequence byteSequence)
-	//	{
-	//		byteSequences.add(byteSequence);
-	//	}
-	//
-	//	/**
-	//	 * 
 	//	 * @return The sort order for this byte sequence which defines the most
 	//	 *         performant order to apply it in relative to other byte sequences
 	//	 *         defined in this signature.
@@ -133,7 +128,7 @@ public class InternalSignature extends SimpleElement
 	//	}
 	//
 	//	/**
-	//	 * 
+	//	 *
 	//	 * @return Whether the signature is valid or not.
 	//	 */
 	//	public boolean isInvalidSignature()
@@ -143,7 +138,7 @@ public class InternalSignature extends SimpleElement
 	//
 	//	/**
 	//	 * Returns a string of all the puids this signature can match.
-	//	 * 
+	//	 *
 	//	 * @return All the puids which this signature can match.
 	//	 */
 	//	private String getFileFormatPUIDs()
@@ -223,7 +218,7 @@ public class InternalSignature extends SimpleElement
 	//	}
 	//
 	//	/**
-	//	 * 
+	//	 *
 	//	 * @return a string describing the file formats matched by this signature.
 	//	 */
 	//	public String getFileFormatDescriptions()
@@ -257,7 +252,7 @@ public class InternalSignature extends SimpleElement
 	//		 * 1 B = BOF sequence 2 B* = BOF sequence followed by * subsequence 4 V
 	//		 * = Variable sequence potential full file scan from beginning = *B 8 E
 	//		 * = EOF sequence 16 E* = EOF sequence followed by * subsequence
-	//		 * 
+	//		 *
 	//		 * We assign sort order by treating these as bits to group the different
 	//		 * sequences together. and to order them in a way that maximises cache
 	//		 * hits on the file reads.
@@ -299,67 +294,6 @@ public class InternalSignature extends SimpleElement
 	//		this.sortOrder = sortBits;
 	//	}
 	//
-	//	/**
-	//	 * 
-	//	 * @param theFileFormat
-	//	 *            A file format which this signature matches.
-	//	 */
-	//	public final void addFileFormat(final FileFormat theFileFormat)
-	//	{
-	//		fileFormatList.add(theFileFormat);
-	//	}
-	//
-	//	/**
-	//	 * Removes the file format from the internal signature.
-	//	 * 
-	//	 * @param format
-	//	 *            The file format to remove.
-	//	 */
-	//	public final void removeFileFormat(final FileFormat format)
-	//	{
-	//		fileFormatList.remove(format);
-	//	}
-	//
-	//	/**
-	//	 * 
-	//	 * @param theIntSigID
-	//	 *            The ID of this signature.
-	//	 */
-	//	public final void setID(final String theIntSigID)
-	//	{
-	//		this.intSigID = Integer.parseInt(theIntSigID);
-	//	}
-	//
-	//	/**
-	//	 * @deprecated Specificity is not used in DROID 5 and above.
-	//	 * @param specificity
-	//	 *            The specificity of this signature.
-	//	 */
-	//	@Deprecated
-	//	public final void setSpecificity(final String specificity)
-	//	{
-	//		this.specificity = "specific".equalsIgnoreCase(specificity);
-	//	}
-	//
-	//	@Override
-	//	public final void setAttributeValue(final String name, final String value)
-	//	{
-	//		if ("ID".equals(name))
-	//		{
-	//			setID(value);
-	//		}
-	//		else
-	//			if ("Specificity".equals(name))
-	//			{
-	//				setSpecificity(value);
-	//			}
-	//			else
-	//			{
-	//				unknownAttributeWarning(name, this.getElementName());
-	//			}
-	//	}
-	//
-	//	/* getters */
 	//
 	//	/**
 	//	 * @return The byte sequences comprising this signature.
@@ -370,7 +304,7 @@ public class InternalSignature extends SimpleElement
 	//	}
 	//
 	//	/**
-	//	 * 
+	//	 *
 	//	 * @return The number of file formats this signature matches.
 	//	 */
 	//	public final int getNumFileFormats()
@@ -379,7 +313,7 @@ public class InternalSignature extends SimpleElement
 	//	}
 	//
 	//	/**
-	//	 * 
+	//	 *
 	//	 * @param theIndex
 	//	 *            The index of the file format to get.
 	//	 * @return A file format this signature matches
@@ -390,7 +324,7 @@ public class InternalSignature extends SimpleElement
 	//	}
 	//
 	//	/**
-	//	 * 
+	//	 *
 	//	 * @return The id of this signature.
 	//	 */
 	//	public final int getID()
@@ -464,7 +398,7 @@ public class InternalSignature extends SimpleElement
 	//	/**
 	//	 * Writes out the regular expressions and file formats for each byte
 	//	 * sequence to a writer.
-	//	 * 
+	//	 *
 	//	 * @param writer
 	//	 *            The writer to write the signature sequences out to.
 	//	 */

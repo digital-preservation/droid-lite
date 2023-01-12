@@ -1,6 +1,7 @@
 package uk.gov.nationalarchives.droidlet.core.xml;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.xml.sax.Attributes;
@@ -14,31 +15,87 @@ import uk.gov.nationalarchives.droidlet.core.xml.SubSequence.SubSequenceBuilder;
 //import uk.gov.nationalarchives.droid.core.signature.compiler.ByteSequenceCompiler;
 
 /**
- * A ByteSequence is a regular-expression like object that can match a target
- * file against itself, but operating over bytes rather than text.
- * 
+ * A ByteSequence is a regular-expression like object that can match a target file against itself, but operating over bytes rather than text.
+ *
  * <p>
- * It is composed of a list of {@link SubSequence} objects, all of which must
- * match for the ByteSequence as a whole to match.
+ * It is composed of a list of {@link SubSequence} objects, all of which must match for the ByteSequence as a whole to match.
  * </p>
- * 
+ *
  * <p>
- * Subsequences are effectively individual strings of bytes (albeit complex
- * ones, including alternate strings and gaps), separated from each other by
- * wildcard .* operators. If there are no .* operators in a ByteSequence, then
- * there is only one SubSequence.
+ * Subsequences are effectively individual strings of bytes (albeit complex ones, including alternate strings and gaps), separated from each other by wildcard .* operators. If there are no .* operators in a ByteSequence, then there is only one SubSequence.
  * </p>
  */
 public class ByteSequence extends SimpleElement
 {
+	/**
+	 * Format string definition of a two-char hex byte value.
+	 */
+	private static final String HEX_FORMAT = "%02x";
+
+	/**
+	 * Value of end of printable ascii chars.
+	 */
+	private static final int END_PRINTABLE_ASCII_CHARS = 126;
+
+	/**
+	 * Value of start of printable ascii chars.
+	 */
+	private static final int START_PRINTABLE_ASCII_CHARS = 32;
+
+	/**
+	 * A mask to convert bytes into integers.
+	 */
+	private static final int BYTEMASK = 0xFF;
+
+	/**
+	 * The number of possible bytes in a byte.
+	 */
+	private static final int BYTEVALUES = 256;
+
+	/**
+	 * A reference string defining whether the byte sequence is anchored to the beginning of the file.
+	 */
+	private static final String BOF_OFFSET = "BOFoffset";
+
+	/**
+	 * A reference string defining whether the byte sequence is anchored to the end of the file.
+	 */
+	private static final String EOF_OFFSET = "EOFoffset";
+
+	/**
+	 * The value of the quote character.
+	 */
+	private static final int QUOTE_CHARACTER_VALUE = 39;
+
+	/**
+	 * Error message when exception reading a byte from positionInFile
+	 */
+	private static final String BYTE_READ_ERROR = "An error occurred reading a byte at positionInFile ";
+
+	private static final int SORT1 = 1;
+	private static final int SORT2 = 2;
+	private static final int SORT3 = 3;
+	private static final int SORT4 = 4;
+	private static final int SORT5 = 5;
+
 	public static class ByteSequenceBuilder extends SimpleElementBuilder
 	{
 		private final List<SubSequenceBuilder> subSequenceBuilders;
+
+		private final Integer indirectOffsetLocation;
+		private final String reference;
+		private final Integer indirectOffsetLength;
+		private final String endianness;
 
 		public ByteSequenceBuilder(Attributes attributes)
 		{
 			super(ByteSequence.class.getSimpleName(), attributes);
 			subSequenceBuilders = new ArrayList<>();
+
+			indirectOffsetLocation = getNullableIntegerAttributeValue("IndirectOffsetLocation");
+			reference = attributes.getValue("Reference");
+			indirectOffsetLength = getNullableIntegerAttributeValue("IndirectOffsetLength");
+			endianness = attributes.getValue("Endianness");
 		}
 
 		@Override
@@ -53,72 +110,21 @@ public class ByteSequence extends SimpleElement
 
 			return null;
 		}
+
+		@Override
+		public ByteSequence build()
+		{
+			return new ByteSequence(this);
+		}
 	}
 
-	/**
-	 * Format string definition of a two-char hex byte value.
-	 */
-	private static final String HEX_FORMAT = "%02x";
-	/**
-	 * value of end of printable ascii chars.
-	 */
-	private static final int END_PRINTABLE_ASCII_CHARS = 126;
-	/**
-	 * value of start of printable ascii chars.
-	 */
-	private static final int START_PRINTABLE_ASCII_CHARS = 32;
-	/**
-	 * A mask to convert bytes into integers.
-	 */
-	private static final int BYTEMASK = 0xFF;
-	/**
-	 * The number of possible bytes in a byte.
-	 */
-	private static final int BYTEVALUES = 256;
-	/**
-	 * Sort order 1
-	 */
-	private static final int SORT1 = 1;
-	/**
-	 * Sort order 2
-	 */
-	private static final int SORT2 = 2;
-	/**
-	 * Sort order 3
-	 */
-	private static final int SORT3 = 3;
-	/**
-	 * Sort order 4
-	 */
-	private static final int SORT4 = 4;
-	/**
-	 * Sort order 5
-	 */
-	private static final int SORT5 = 5;
-	/**
-	 * A reference string defining whether the byte sequence is anchored to the
-	 * beginning of the file.
-	 */
-	private static final String BOF_OFFSET = "BOFoffset";
-	/**
-	 * A reference string defining whether the byte sequence is anchored to the
-	 * end of the file.
-	 */
-	private static final String EOF_OFFSET = "EOFoffset";
-	/**
-	 * The value of the quote character.
-	 */
-	private static final int QUOTE_CHARACTER_VALUE = 39;
-	/**
-	 * Error message when exception reading a byte from positionInFile
-	 */
-	private static final String BYTE_READ_ERROR = "An error occurred reading a byte at positionInFile ";
-
-	private final List<SubSequence> subSequences = new ArrayList<SubSequence>();
+	private final List<SubSequence> subSequences;
 	private final SubSequence[] sequences = new SubSequence[0];
 	private final String reference = "Variable";
-	private final boolean bigEndian = true; // Assume a signature is big-endian unless
-	// we are told to the contrary.
+
+	// Assume a signature is big-endian unless we are told to the contrary.
+	private final boolean bigEndian = true;
+
 	private boolean hasIndirectOffset;
 	private boolean anchoredToBOF;
 	private boolean anchoredToEOF;
@@ -131,24 +137,29 @@ public class ByteSequence extends SimpleElement
 	private boolean isInvalidByteSequence;
 
 	/**
-	 * The signature sequence in PRONOM or container compatible syntax. It won't
-	 * be set for most ByteSequences, but can be set from the signature XML
-	 * using a Sequence attribute on a ByteSequence element.
+	 * The signature sequence in PRONOM or container compatible syntax. It won't be set for most ByteSequences, but can be set from the signature XML using a Sequence attribute on a ByteSequence element.
 	 */
 	private final String sequence = "";
 
-	/**
-	 * Whether the bytesequence is prepared for use or not. The flag intends to
-	 * only call this once, but container signature compile on demand from
-	 * multiple threads. This causes the ByteSequence to be prepared for use
-	 * multiple times even with this flag set.
-	 */
-	// TODO: investigate threading issues around ByteSequence compilation and
-	// preparation in container signatures.
-	private boolean preparedForUse;
+	// Probably not needed after the use of the builder pattern
+	//	/**
+	//	 * Whether the bytesequence is prepared for use or not. The flag intends to only call this once, but container signature compile on demand from multiple threads.
+	//	 * This causes the ByteSequence to be prepared for use multiple times even with this flag set.
+	//	 */
+	//
+	//	// TODO: investigate threading issues around ByteSequence compilation and preparation in container signatures.
+	//	private boolean preparedForUse;
+
+	private ByteSequence(ByteSequenceBuilder byteSequenceBuilder)
+	{
+		final List<SubSequence> stagingSubSequences = new ArrayList<>();
+		for (final SubSequenceBuilder subSequenceBuilder : byteSequenceBuilder.subSequenceBuilders)
+			stagingSubSequences.add(subSequenceBuilder.build());
+		subSequences = Collections.unmodifiableList(stagingSubSequences);
+	}
 
 	//	/**
-	//	 * 
+	//	 *
 	//	 * @return Whether the byte sequence is anchored to the beginning of a file.
 	//	 */
 	//	public final boolean isAnchoredToBOF()
@@ -157,7 +168,7 @@ public class ByteSequence extends SimpleElement
 	//	}
 	//
 	//	/**
-	//	 * 
+	//	 *
 	//	 * @return Whether the byte sequence is anchored to the end of a file.
 	//	 */
 	//	public final boolean isAnchoredToEOF()
@@ -166,7 +177,7 @@ public class ByteSequence extends SimpleElement
 	//	}
 	//
 	//	/**
-	//	 * 
+	//	 *
 	//	 * @return The sort order of this byte sequence.
 	//	 */
 	//	public final int getSortOrder()
@@ -175,7 +186,7 @@ public class ByteSequence extends SimpleElement
 	//	}
 	//
 	//	/**
-	//	 * 
+	//	 *
 	//	 * @return A string defining the anchoring status of the byte sequence.
 	//	 */
 	//	public final String getReference()
@@ -184,7 +195,7 @@ public class ByteSequence extends SimpleElement
 	//	}
 	//
 	//	/**
-	//	 * 
+	//	 *
 	//	 * @param sseq
 	//	 *            The subsequence to add to the byte sequence.
 	//	 */
@@ -194,7 +205,7 @@ public class ByteSequence extends SimpleElement
 	//	}
 	//
 	//	/**
-	//	 * 
+	//	 *
 	//	 * @return The number of subsequence in the byte sequence.
 	//	 */
 	//	public final int getNumberOfSubSequences()
@@ -204,7 +215,7 @@ public class ByteSequence extends SimpleElement
 	//
 	//	/**
 	//	 * Return a defensive copy of any subsequences in this ByteSequence.
-	//	 * 
+	//	 *
 	//	 * @return a defensive copy of any subsequences in this ByteSequence.
 	//	 */
 	//	public List<SubSequence> getSubSequences()
@@ -216,7 +227,7 @@ public class ByteSequence extends SimpleElement
 	//	 * If a reference attribute doesn't exist, this method may never be called.
 	//	 * Be careful with any general setup done in this method. Defaults should
 	//	 * already exist which are true if the reference is not set.
-	//	 * 
+	//	 *
 	//	 * @param theRef
 	//	 *            A string defining the anchoring status of the byte sequence.
 	//	 */
@@ -254,7 +265,7 @@ public class ByteSequence extends SimpleElement
 	//
 	//	/**
 	//	 * Returns a signature sequence set on this ByteSequence object.
-	//	 * 
+	//	 *
 	//	 * @return a signature sequence set on this ByteSequence object.
 	//	 */
 	//	public String getSequence()
@@ -265,7 +276,7 @@ public class ByteSequence extends SimpleElement
 	//	/**
 	//	 * This is only used when calculating indirect offsets. There are currently
 	//	 * no signatures that use this at the time of writing.
-	//	 * 
+	//	 *
 	//	 * @param endianness
 	//	 *            The endianess of the byte sequence.
 	//	 */
@@ -275,7 +286,7 @@ public class ByteSequence extends SimpleElement
 	//	}
 	//
 	//	/**
-	//	 * 
+	//	 *
 	//	 * @param indirectOffsetLength
 	//	 *            The length of the indirect offset.
 	//	 */
@@ -285,7 +296,7 @@ public class ByteSequence extends SimpleElement
 	//	}
 	//
 	//	/**
-	//	 * 
+	//	 *
 	//	 * @param indirectOffsetLocation
 	//	 *            The location of the indirect offset.
 	//	 */
@@ -458,7 +469,7 @@ public class ByteSequence extends SimpleElement
 	//	}
 	//
 	//	/**
-	//	 * 
+	//	 *
 	//	 * @return Whether the byteSequence is invalid or not.
 	//	 */
 	//	public boolean isInvalidByteSequence()
@@ -605,7 +616,7 @@ public class ByteSequence extends SimpleElement
 	//	}
 	//
 	//	/**
-	//	 * 
+	//	 *
 	//	 * @param prettyPrint
 	//	 *            whether to pretty print the regular expression.
 	//	 * @return A regular expression representation of the byte sequence.
@@ -630,7 +641,7 @@ public class ByteSequence extends SimpleElement
 	//	}
 	//
 	//	/**
-	//	 * 
+	//	 *
 	//	 * @param prettyPrint
 	//	 *            whether to pretty print the regular expression.
 	//	 * @param bytes
@@ -668,7 +679,7 @@ public class ByteSequence extends SimpleElement
 	//	}
 	//
 	//	/**
-	//	 * 
+	//	 *
 	//	 * @param prettyPrint
 	//	 *            whether to pretty print the regular expression.
 	//	 * @param byteValue
@@ -685,7 +696,7 @@ public class ByteSequence extends SimpleElement
 	//
 	//	/**
 	//	 * Append a bounded gap to a string buffer.
-	//	 * 
+	//	 *
 	//	 * @param prettyPrint
 	//	 *            whether to pretty print the regular expression.
 	//	 * @param buffer
@@ -728,7 +739,7 @@ public class ByteSequence extends SimpleElement
 	//	/**
 	//	 * Append an expression to a string buffer with a bounded gap range on the
 	//	 * correct side of it.
-	//	 * 
+	//	 *
 	//	 * @param prettyPrint
 	//	 *            whether to pretty print the regular expression.
 	//	 * @param expressionFirst

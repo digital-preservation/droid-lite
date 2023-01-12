@@ -14,17 +14,19 @@ import uk.gov.nationalarchives.droidlet.core.xml.Shift.ShiftBuilder;
 /**
  * A SubSequence is an extended byte-string to match.
  *
- * It must include at least one unambiguous sequence of bytes or sets of bytes,
- * which can be searched for using the BoyerMooreHorpsool (BMH) algorithm. This
- * is known as the "anchor" sequence.
+ * It must include at least one unambiguous sequence of bytes or sets of bytes, which can be searched for using the BoyerMooreHorpsool (BMH) algorithm. This is known as the "anchor" sequence.
  *
- * If necessary, it can include Left and Right Fragments, which are parts of the
- * extended string of bytes which cannot be searched for using BMH. These
- * fragments include features like alternative (A|B|C) and gaps in the string,
- * e.g. {5} or {5-10}.
+ * If necessary, it can include Left and Right Fragments, which are parts of the extended string of bytes which cannot be searched for using BMH. These fragments include features like alternative (A|B|C) and gaps in the string, e.g. {5} or {5-10}.
  */
 public class SubSequence extends SimpleElement
 {
+	private static final String SEQUENCE_PARSE_ERROR = "The signature sub-sequence [%s] could not be parsed. " + "The error returned was [%s]";
+
+	//	private static final SequenceMatcherCompiler SEQUENCE_COMPILER = new SequenceMatcherCompiler();
+
+	private static final boolean EXPRESSION_BEFORE_GAPS = true;
+	private static final boolean GAPS_BEFORE_EXPRESSION = false;
+
 	public static class SubSequenceBuilder extends SimpleElementBuilder
 	{
 		private SequenceBuilder sequenceBuilder;
@@ -33,12 +35,22 @@ public class SubSequence extends SimpleElement
 		private final List<LeftFragmentBuilder> leftFragmentBuilders;
 		private final List<RightFragmentBuilder> rightFragmentBuilders;
 
+		private final int minFragLength;
+		private final int position;
+		private final Integer subSeqMinOffset;
+		private final Integer subSeqMaxOffset;
+
 		public SubSequenceBuilder(Attributes attributes)
 		{
 			super(SubSequence.class.getSimpleName(), attributes);
 			shiftBuilders = new ArrayList<>();
 			leftFragmentBuilders = new ArrayList<>();
 			rightFragmentBuilders = new ArrayList<>();
+
+			minFragLength = Integer.parseInt(attributes.getValue("MinFragLength"));
+			position = Integer.parseInt(attributes.getValue("Position"));
+			subSeqMinOffset = getNullableIntegerAttributeValue("SubSequMinOffset");
+			subSeqMaxOffset = getNullableIntegerAttributeValue("SubSeqMaxOffset");
 		}
 
 		@Override
@@ -79,14 +91,13 @@ public class SubSequence extends SimpleElement
 
 			return null;
 		}
+
+		@Override
+		public SubSequence build()
+		{
+			return new SubSequence(this);
+		}
 	}
-
-	private static final String SEQUENCE_PARSE_ERROR = "The signature sub-sequence [%s] could not be parsed. " + "The error returned was [%s]";
-
-	//	private static final SequenceMatcherCompiler SEQUENCE_COMPILER = new SequenceMatcherCompiler();
-
-	private static final boolean EXPRESSION_BEFORE_GAPS = true;
-	private static final boolean GAPS_BEFORE_EXPRESSION = false;
 
 	private int minSeqOffset;
 	private int maxSeqOffset;
@@ -111,6 +122,11 @@ public class SubSequence extends SimpleElement
 	private boolean useLeftFragmentBackTrack;
 	private boolean useRightFragmentBackTrack;
 	private boolean preparedForUse;
+
+	public SubSequence(SubSequenceBuilder subSequenceBuilder)
+	{
+
+	}
 
 	//
 	//
@@ -304,7 +320,7 @@ public class SubSequence extends SimpleElement
 	//	/**
 	//	 * Get the number of alternative fragment options at a given fragmemt
 	//	 * posoition.
-	//	 * 
+	//	 *
 	//	 * @param thePosition
 	//	 *            The (1-based) fragment position index.
 	//	 * @param orderedFragments
@@ -392,7 +408,7 @@ public class SubSequence extends SimpleElement
 	//
 	//	/**
 	//	 * Accessor method for internal objects to allow testing.
-	//	 * 
+	//	 *
 	//	 * @return matcher
 	//	 */
 	//	public SequenceMatcher getAnchorMatcher()
@@ -1001,7 +1017,7 @@ public class SubSequence extends SimpleElement
 	//
 	//	/***
 	//	 * toString override.
-	//	 * 
+	//	 *
 	//	 * @return Formatted simple name of the class.
 	//	 */
 	//	@Override
@@ -1827,27 +1843,27 @@ public class SubSequence extends SimpleElement
 	//	 * by the identified sequences or returns -2 if no match was found
 	//	 *
 	//	 * @param bytes the binary file to be identified
-	//	 * 
+	//	 *
 	//	 * @param leftBytePos left-most byte positionInFile of allowed search window
 	//	 * on file
-	//	 * 
+	//	 *
 	//	 * @param rightBytePos right-most byte positionInFile of allowed search
 	//	 * window on file
-	//	 * 
+	//	 *
 	//	 * @param searchDirection 1 for a left to right search, -1 for right to left
-	//	 * 
+	//	 *
 	//	 * @param offsetRange range of possible start offsetPositions in the
 	//	 * direction of searchDirection
-	//	 * 
+	//	 *
 	//	 * @param fragments list of fragments at positions for which to check
-	//	 * 
+	//	 *
 	//	 * @param finalOffsetFoundPositions Class to hold information about the file
 	//	 * positions and offsets at which the fragment(s) in the final fragment
 	//	 * option was (or were) previously found in the file. Will be null unless
 	//	 * we're rechecking the final position fragment(s) for compliance with the
 	//	 * overall sequence offset after all the fragments were found with valid
 	//	 * offsets in relation to each other in the first pass check.
-	//	 * 
+	//	 *
 	//	 * @return If subSeqFound = true, an array containing the file positions of
 	//	 * each of the options found for the final fragment position. These values
 	//	 * represent the offset of the first byte of the fragment from BOF. E.g. say
@@ -2414,7 +2430,7 @@ public class SubSequence extends SimpleElement
 	//
 	//		/**
 	//		 * Records data about a fragment hit
-	//		 * 
+	//		 *
 	//		 * @param altPos
 	//		 *            The index for the fragment within the originating
 	//		 *            {@code List<SideFragment>} passed to the constructor A
@@ -2442,7 +2458,7 @@ public class SubSequence extends SimpleElement
 	//
 	//		/**
 	//		 * Returns the offset at which a given fragment has been found
-	//		 * 
+	//		 *
 	//		 * @param altPos
 	//		 *            The index of the fragment in the
 	//		 *            {@code List<SideFragment>} passed to the constructor
@@ -2457,7 +2473,7 @@ public class SubSequence extends SimpleElement
 	//		/**
 	//		 * Returns the position within the byte stream at which a given fragment
 	//		 * was found
-	//		 * 
+	//		 *
 	//		 * @param altPos
 	//		 *            The index of the fragment in the
 	//		 *            {@code List<SideFragment>} passed to the constructor
@@ -2474,7 +2490,7 @@ public class SubSequence extends SimpleElement
 	//		/**
 	//		 * Finds the first file position (from BOF) at which any of the fragment
 	//		 * options have been found
-	//		 * 
+	//		 *
 	//		 * @return The lowest numbered file position at which a fragment has
 	//		 *         been found, or -1 if none of the fragments have been found.
 	//		 */

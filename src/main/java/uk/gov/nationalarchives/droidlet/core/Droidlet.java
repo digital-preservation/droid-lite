@@ -10,10 +10,14 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import uk.gov.nationalarchives.droidlet.core.xml.FFSignatureFile;
 import uk.gov.nationalarchives.droidlet.core.xml.FFSignatureFile.FFSignatureFileBuilder;
+import uk.gov.nationalarchives.droidlet.core.xml.SimpleElement.SimpleElementBuilder;
 
 public class Droidlet
 {
+	private FFSignatureFile ffSignatureFile;
+
 	void loadPronomFileFormatSpecifications(InputStream xmlInputStream) throws SAXException, IOException, ParserConfigurationException
 	{
 		class SaxHandler extends DefaultHandler
@@ -42,12 +46,21 @@ public class Droidlet
 			@Override
 			public void characters(char[] characters, int start, int length) throws SAXException
 			{
-				rootBuilder.addText(new String(characters));
+				final StringBuilder stringBuilder = new StringBuilder();
+				stringBuilder.append(characters, start, length);
+				rootBuilder.addText(stringBuilder.toString());
 			}
 		}
 
+		// Trigger the parse phase
 		final SaxHandler saxHandler = new SaxHandler();
 		SAXParserFactory.newInstance().newSAXParser().parse(xmlInputStream, saxHandler);
+
+		// Trigger the build phase
+		ffSignatureFile = saxHandler.rootBuilder.build();
+
 		xmlInputStream.close();
+
+		SimpleElementBuilder.outputAttributes();
 	}
 }

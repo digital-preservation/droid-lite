@@ -20,12 +20,25 @@ public class FileFormat extends SimpleElement
 		final List<ExtensionBuilder> extensionBuilders;
 		final List<HasPriorityOverFileFormatIDBuilder> hasPriorityOverFileFormatIDBuilders;
 
+		final String mimeType;
+		final String puid;
+		final String version;
+		final int id;
+		final String name;
+
 		public FileFormatBuilder(Attributes attributes)
 		{
 			super(FileFormat.class.getSimpleName(), attributes);
+
 			internalSignatureIDBuilders = new ArrayList<>();
 			extensionBuilders = new ArrayList<>();
 			hasPriorityOverFileFormatIDBuilders = new ArrayList<>();
+
+			mimeType = attributes.getValue("MIMEType");
+			puid = attributes.getValue("PUID");
+			version = attributes.getValue("Version");
+			id = Integer.parseInt(attributes.getValue("ID"));
+			name = attributes.getValue("name");
 		}
 
 		@Override
@@ -54,6 +67,12 @@ public class FileFormat extends SimpleElement
 
 			return null;
 		}
+
+		@Override
+		public FileFormat build()
+		{
+			return new FileFormat(this);
+		}
 	}
 
 	private int identifier;
@@ -66,12 +85,14 @@ public class FileFormat extends SimpleElement
 	private final List<Integer> hasPriorityOver = new ArrayList<Integer>();
 	private String mimeType;
 
-	/* setters */
+	private FileFormat(FileFormatBuilder fileFormatBuilder)
+	{
+		// TODO
+	}
 
 	/**
 	 * @param theID
-	 *            the id of the internal signature. As a string, as that is how
-	 *            the XML parser sets the value.
+	 *            the id of the internal signature. As a string, as that is how the XML parser sets the value.
 	 */
 	public final void setInternalSignatureID(final String theID)
 	{
@@ -79,7 +100,7 @@ public class FileFormat extends SimpleElement
 	}
 
 	/**
-	 * 
+	 *
 	 * @param id
 	 *            The id of the signature to remove.
 	 */
@@ -90,7 +111,7 @@ public class FileFormat extends SimpleElement
 
 	/**
 	 * Removes all internal signature ids from a file format.
-	 * 
+	 *
 	 * @return a copy of the list of signature ids removed from the file format.
 	 */
 	public final List<Integer> clearSignatures()
@@ -101,7 +122,7 @@ public class FileFormat extends SimpleElement
 	}
 
 	/**
-	 * 
+	 *
 	 * @param theExtension
 	 *            the file extension.
 	 */
@@ -112,7 +133,7 @@ public class FileFormat extends SimpleElement
 	}
 
 	/**
-	 * 
+	 *
 	 * @param theID
 	 *            The signature the file format takes priority over.
 	 */
@@ -122,7 +143,7 @@ public class FileFormat extends SimpleElement
 	}
 
 	/**
-	 * 
+	 *
 	 * @param mimeType
 	 *            The mime type of the file format.
 	 */
@@ -175,7 +196,7 @@ public class FileFormat extends SimpleElement
 	}
 
 	/**
-	 * 
+	 *
 	 * @return the number of file extensions.
 	 */
 	public final int getNumExtensions()
@@ -184,7 +205,7 @@ public class FileFormat extends SimpleElement
 	}
 
 	/**
-	 * 
+	 *
 	 * @return the number of file formats this format has priority over.
 	 */
 	public final int getNumHasPriorityOver()
@@ -193,7 +214,7 @@ public class FileFormat extends SimpleElement
 	}
 
 	/**
-	 * 
+	 *
 	 * @return The list of format ids this format has priority over.
 	 */
 	public List<Integer> getFormatIdsHasPriorityOver()
@@ -202,7 +223,7 @@ public class FileFormat extends SimpleElement
 	}
 
 	/**
-	 * 
+	 *
 	 * @param theIndex
 	 *            The index of the internal signature to get the id of.
 	 * @return the id of the internal signature.
@@ -213,7 +234,7 @@ public class FileFormat extends SimpleElement
 	}
 
 	/**
-	 * 
+	 *
 	 * @return The mime type of the file format.
 	 */
 	public final String getMimeType()
@@ -222,7 +243,7 @@ public class FileFormat extends SimpleElement
 	}
 
 	/**
-	 * 
+	 *
 	 * @param theIndex
 	 *            The index of the file extension
 	 * @return the file extension.
@@ -233,7 +254,7 @@ public class FileFormat extends SimpleElement
 	}
 
 	/**
-	 * 
+	 *
 	 * @return A list of extensions defined against this file format.
 	 */
 	public final List<String> getExtensions()
@@ -242,7 +263,7 @@ public class FileFormat extends SimpleElement
 	}
 
 	/**
-	 * 
+	 *
 	 * @param theIndex
 	 *            The index of the format this format takes priority over.
 	 * @return The id of the file format which this format takes priority over.
@@ -253,7 +274,7 @@ public class FileFormat extends SimpleElement
 	}
 
 	/**
-	 * 
+	 *
 	 * @return The id of this file format.
 	 */
 	public final int getID()
@@ -262,7 +283,7 @@ public class FileFormat extends SimpleElement
 	}
 
 	/**
-	 * 
+	 *
 	 * @return the name of this file format.
 	 */
 	public final String getName()
@@ -271,7 +292,7 @@ public class FileFormat extends SimpleElement
 	}
 
 	/**
-	 * 
+	 *
 	 * @return The version of this file format.
 	 */
 	public final String getVersion()
@@ -280,7 +301,7 @@ public class FileFormat extends SimpleElement
 	}
 
 	/**
-	 * 
+	 *
 	 * @return the puid of this file format.
 	 */
 	public final String getPUID()
@@ -289,13 +310,12 @@ public class FileFormat extends SimpleElement
 	}
 
 	/**
-	 * Indicates whether the file extension given is listed against this file
-	 * format.
-	 * 
+	 * Indicates whether the file extension given is listed against this file format.
+	 *
 	 * @param theExtension
 	 *            file extension
 	 * @return whether this file format has a matching extension.
-	 * 
+	 *
 	 */
 	public final boolean hasMatchingExtension(final String theExtension)
 	{
@@ -303,19 +323,15 @@ public class FileFormat extends SimpleElement
 	}
 
 	/**
-	 * Indicates whether the file extension given should result in a mismatch
-	 * warning.
-	 * 
-	 * If there are no extensions listed for this file format, there should be
-	 * no mismatch warning, whatever the given extension.
-	 * 
-	 * Otherwise, a warning should be issued if the extension is not listed
-	 * against this file format.
-	 * 
+	 * Indicates whether the file extension given should result in a mismatch warning.
+	 *
+	 * If there are no extensions listed for this file format, there should be no mismatch warning, whatever the given extension.
+	 *
+	 * Otherwise, a warning should be issued if the extension is not listed against this file format.
+	 *
 	 * @param theExtension
 	 *            The file extension to check.
-	 * @return Whether the file extension given should result in a mismatch
-	 *         warning.
+	 * @return Whether the file extension given should result in a mismatch warning.
 	 */
 	public final boolean hasExtensionMismatch(final String theExtension)
 	{

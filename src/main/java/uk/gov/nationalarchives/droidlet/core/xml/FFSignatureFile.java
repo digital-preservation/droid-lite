@@ -6,16 +6,13 @@ import uk.gov.nationalarchives.droidlet.core.xml.FileFormatCollection.FileFormat
 import uk.gov.nationalarchives.droidlet.core.xml.InternalSignatureCollection.InternalSignatureCollectionBuilder;
 
 /**
- * Holds all the file formats and binary signatures used to match them.
- * 
- * <p>
- * Can match a target file against all the binary signatures, returning which
- * file formats were hit when matching.
- * </p>
- * 
+ * Holds all the file formats and binary signatures. Can match a target file against all the binary signatures, returning which file formats were hit when matching.
  */
 public class FFSignatureFile extends SimpleElement
 {
+	private static final int DEFAULT_TENTATIVE_EXTENSION_SIZE = 100;
+	private static final int DEFAULT_ALL_EXTENSION_SIZE = 300;
+
 	public static class FFSignatureFileBuilder extends SimpleElementBuilder
 	{
 		private final String dateCreated;
@@ -47,191 +44,77 @@ public class FFSignatureFile extends SimpleElement
 
 			return null;
 		}
+
+		@Override
+		public FFSignatureFile build()
+		{
+			return new FFSignatureFile(this);
+		}
 	}
-	//
-	//	/**
-	//	 * Default size of the tentative file format collection.
-	//	 */
-	//	private static final int DEFAULT_TENTATIVE_EXTENSION_SIZE = 100;
-	//	private static final int DEFAULT_ALL_EXTENSION_SIZE = 300;
-	//
-	//	// private Logger log = LoggerFactory.getLogger(this.getClass());
-	//
-	//	private String version = "";
-	//	private String dateCreated = "";
-	//	private FileFormatCollection formatCollection;
-	//	private InternalSignatureCollection internalSignatureCollection;
+
+	private final String dateCreated;
+	private final String version;
+	private final InternalSignatureCollection internalSignatureCollection;
+	private final FileFormatCollection formatCollection;
 	//	private Map<String, List<FileFormat>> tentativeFormats = new HashMap<String, List<FileFormat>>(DEFAULT_TENTATIVE_EXTENSION_SIZE);
 	//	private Map<String, List<FileFormat>> formatsForExtension = new HashMap<String, List<FileFormat>>(DEFAULT_ALL_EXTENSION_SIZE);
 	//
-	//	private long maxBytesToScan = -1; // default to scanning all bytes.
-	//
-	//	/* setters */
+
+	public FFSignatureFile(FFSignatureFileBuilder builder)
+	{
+		this.version = builder.version;
+		this.dateCreated = builder.dateCreated;
+		this.internalSignatureCollection = builder.internalSignatureCollectionBuilder.build();
+		this.formatCollection = builder.fileFormatCollectionBuilder.build();
+	}
+
+	/**
+	 * Identify the target file using the signatures defined in this signature file.
+	 */
+	//	public final void runFileIdentification(final ByteReader targetFile, int maximumBytesToScal)
+	{
+		//		final List<InternalSignature> matchingSigs = internalSignatureCollection.getMatchingSignatures(targetFile, maximumBytesToScal);
+		//		final int numSigs = matchingSigs.size(); // reduce garbage: use an
+		//		                                         // indexed loop rather than an
+		//		                                         // iterator.
+		//		for (int i = 0; i < numSigs; i++)
+		//		{
+		//			final InternalSignature internalSig = matchingSigs.get(i);
+		//			targetFile.setPositiveIdent();
+		//			final int numFileFormats = internalSig.getNumFileFormats();
+		//			for (int fileFormatIndex = 0; fileFormatIndex < numFileFormats; fileFormatIndex++)
+		//			{
+		//				final FileFormatHit fileHit = new FileFormatHit(internalSig.getFileFormat(fileFormatIndex), FileFormatHit.HIT_TYPE_POSITIVE_GENERIC_OR_SPECIFIC, internalSig.isSpecific(), "");
+		//				targetFile.addHit(fileHit);
+		//			}
+		//		}
+	}
+
 	//	/**
-	//	 * @param coll
-	//	 *            The file format collection for this signature file.
-	//	 */
-	//	public final void setFileFormatCollection(final FileFormatCollection coll)
-	//	{
-	//		this.formatCollection = coll;
-	//	}
-	//
-	//	/**
-	//	 * 
-	//	 * @param col3
-	//	 *            The internal signature collection for this signature file.
-	//	 */
-	//	public final void setInternalSignatureCollection(final InternalSignatureCollection col3)
-	//	{
-	//		this.internalSignatureCollection = col3;
-	//	}
-	//
-	//	private void setVersion(final String vers)
-	//	{
-	//		this.version = vers;
-	//	}
-	//
-	//	private void setDateCreated(final String created)
-	//	{
-	//		this.dateCreated = created;
-	//	}
-	//
-	//	@Override
-	//	public final void setAttributeValue(final String name, final String value)
-	//	{
-	//		if ("Version".equals(name))
-	//		{
-	//			setVersion(value.trim());
-	//		}
-	//		else
-	//			if ("DateCreated".equals(name))
-	//			{
-	//				setDateCreated(value);
-	//			}
-	//			else
-	//			{
-	//				unknownAttributeWarning(name, this.getElementName());
-	//			}
-	//	}
-	//
-	//	/* getters */
-	//	private int getNumInternalSignatures()
-	//	{
-	//		return this.internalSignatureCollection.getInternalSignatures().size();
-	//	}
-	//
-	//	/**
-	//	 * 
-	//	 * @return The list of internal signatures in this signature file.
-	//	 */
-	//	public List<InternalSignature> getSignatures()
-	//	{
-	//		return internalSignatureCollection.getInternalSignatures();
-	//	}
-	//
-	//	private InternalSignature getInternalSignature(final int theIndex)
-	//	{
-	//		return internalSignatureCollection.getInternalSignatures().get(theIndex);
-	//	}
-	//
-	//	/**
-	//	 * 
-	//	 * @return The number of file formats in the signature file.
-	//	 */
-	//	public final int getNumFileFormats()
-	//	{
-	//		return this.formatCollection.getFileFormats().size();
-	//	}
-	//
-	//	/**
-	//	 * 
-	//	 * @param theIndex
-	//	 *            The index of the file format.
-	//	 * @return The file format at the given index in this signature file.
-	//	 */
-	//	public final FileFormat getFileFormat(final int theIndex)
-	//	{
-	//		return formatCollection.getFileFormats().get(theIndex);
-	//	}
-	//
-	//	/**
-	//	 * 
-	//	 * @param puid
-	//	 *            The puid to get a file format for.
-	//	 * @return The file format for this puid.
-	//	 */
-	//	public final FileFormat getFileFormat(final String puid)
-	//	{
-	//		return formatCollection.getFormatForPUID(puid);
-	//	}
-	//
-	//	/**
-	//	 * 
-	//	 * @return A file format collection.
-	//	 */
-	//	public FileFormatCollection getFileFormatCollection()
-	//	{
-	//		return formatCollection;
-	//	}
-	//
-	//	/**
-	//	 * 
-	//	 * @return The version of this signature file.
-	//	 */
-	//	public final String getVersion()
-	//	{
-	//		return version;
-	//	}
-	//
-	//	/**
-	//	 * 
-	//	 * @return The date this signature file was created.
-	//	 */
-	//	public final String getDateCreated()
-	//	{
-	//		return dateCreated;
-	//	}
-	//
-	//	/**
-	//	 * This method must be run after the signature file data has been read and
-	//	 * before the FFSignatureFile class is used.
-	//	 */
-	//	public final void prepareForUse()
-	//	{
-	//		// BNO: Called when profile initialised.
-	//		this.prepareInternalSignatures();
-	//	}
-	//
-	//	/**
-	//	 * Informs the signature file that we should remove any internal binary
-	//	 * signatures for a given puid.
-	//	 * 
-	//	 * For example, if there are container signatures for a puid, we should call
-	//	 * this method, to ensure that we don't run the binary signatures as well as
-	//	 * the container signatures.
-	//	 * 
-	//	 * This will remove any internal signatures that exist for that puid, and
-	//	 * adjust the tentative extension maps.
-	//	 * 
-	//	 * Note that internal signatures can be mapped to more than one file format,
-	//	 * and file formats can have more than one signature attached to them.
-	//	 * 
+	//	 * Informs the signature file that we should remove any internal binary signatures for a given puid.
+	//	 *
+	//	 * For example, if there are container signatures for a puid, we should call this method, to ensure that we don't run the binary signatures as well as the container signatures.
+	//	 *
+	//	 * This will remove any internal signatures that exist for that puid, and adjust the tentative extension maps.
+	//	 *
+	//	 * Note that internal signatures can be mapped to more than one file format, and file formats can have more than one signature attached to them.
+	//	 *
 	//	 * @param puid
 	//	 *            The puid.
 	//	 */
 	//	public final void puidHasOverridingSignatures(String puid)
 	//	{
-	//		FileFormat format = getFileFormat(puid);
+	//		final FileFormat format = getFileFormat(puid);
 	//		if (format != null)
 	//		{
 	//			// 1. remove all the internal signature ids from the file format:
-	//			List<Integer> removedSignatureIDs = format.clearSignatures();
+	//			final List<Integer> removedSignatureIDs = format.clearSignatures();
 	//
 	//			// 2. For each signature removed from the file format,
 	//			// also remove the file format from the signature:
-	//			for (Integer id : removedSignatureIDs)
+	//			for (final Integer id : removedSignatureIDs)
 	//			{
-	//				InternalSignature signature = internalSignatureCollection.getInternalSignature(id);
+	//				final InternalSignature signature = internalSignatureCollection.getInternalSignature(id);
 	//				if (signature != null)
 	//				{
 	//					signature.removeFileFormat(format);
@@ -253,9 +136,9 @@ public class FFSignatureFile extends SimpleElement
 	//			// signature at the time of writing for DROID 6).
 	//			// Therefore, remove it from the tentative extensions lists,
 	//			// if it ever existed there.
-	//			for (String extension : format.getExtensions())
+	//			for (final String extension : format.getExtensions())
 	//			{
-	//				List<FileFormat> tentativeFormatsForExtension = tentativeFormats.get(extension);
+	//				final List<FileFormat> tentativeFormatsForExtension = tentativeFormats.get(extension);
 	//				if (tentativeFormatsForExtension != null)
 	//				{
 	//					tentativeFormatsForExtension.remove(format);
@@ -365,11 +248,11 @@ public class FFSignatureFile extends SimpleElement
 	//	/**
 	//	 * Maps a format against its extensions, if it doesn't have any other
 	//	 * signature defined for it.
-	//	 * 
+	//	 *
 	//	 * The original meaning of a Tentative format in earlier versions of DROID
 	//	 * was precisely a format which only had file extensions defined, and no
 	//	 * other signatures.
-	//	 * 
+	//	 *
 	//	 * @param tentativeFormat
 	//	 */
 	//	private void addTentativeFormat(final FileFormat tentativeFormat)
@@ -390,7 +273,7 @@ public class FFSignatureFile extends SimpleElement
 	//
 	//	/**
 	//	 * Maps a format against all the extensions it defines.
-	//	 * 
+	//	 *
 	//	 * @param format
 	//	 *            The format to add its extensions for.
 	//	 */
@@ -412,7 +295,7 @@ public class FFSignatureFile extends SimpleElement
 	//
 	//	/**
 	//	 * Gets the file formats for an extension with no other signature defined.
-	//	 * 
+	//	 *
 	//	 * @param extension
 	//	 *            The file extension to check for.
 	//	 * @return A list of file formats for this extension with no other signature
@@ -425,7 +308,7 @@ public class FFSignatureFile extends SimpleElement
 	//
 	//	/**
 	//	 * Gets the file formats for a file extension.
-	//	 * 
+	//	 *
 	//	 * @param extension
 	//	 *            The file extension to check for.
 	//	 * @return A list of file formats for this extension.
@@ -434,53 +317,4 @@ public class FFSignatureFile extends SimpleElement
 	//	{
 	//		return formatsForExtension.get(extension.toUpperCase());
 	//	}
-	//
-	//	/**
-	//	 * 
-	//	 * @return The maximum number of bytes to scan from each end of the file. If
-	//	 *         the number is less than zero, then the full file can be scanned.
-	//	 */
-	//	public final long getMaxBytesToScan()
-	//	{
-	//		return maxBytesToScan;
-	//	}
-	//
-	//	/**
-	//	 *
-	//	 * @param maxBytesToScan
-	//	 *            The maximum number of bytes to scan from each end of the file.
-	//	 *            If the number is less than zero, then the full file can be
-	//	 *            scanned.
-	//	 */
-	//	public void setMaxBytesToScan(final long maxBytesToScan)
-	//	{
-	//		this.maxBytesToScan = maxBytesToScan;
-	//	}
-	//
-	//	/**
-	//	 * Identify the target file using the signatures defined in this signature
-	//	 * file.
-	//	 *
-	//	 * @param targetFile
-	//	 *            The binary file to be identified
-	//	 */
-	//	public final void runFileIdentification(final ByteReader targetFile)
-	//	{
-	//		final List<InternalSignature> matchingSigs = internalSignatureCollection.getMatchingSignatures(targetFile, maxBytesToScan);
-	//		final int numSigs = matchingSigs.size(); // reduce garbage: use an
-	//		                                         // indexed loop rather than an
-	//		                                         // iterator.
-	//		for (int i = 0; i < numSigs; i++)
-	//		{
-	//			final InternalSignature internalSig = matchingSigs.get(i);
-	//			targetFile.setPositiveIdent();
-	//			final int numFileFormats = internalSig.getNumFileFormats();
-	//			for (int fileFormatIndex = 0; fileFormatIndex < numFileFormats; fileFormatIndex++)
-	//			{
-	//				final FileFormatHit fileHit = new FileFormatHit(internalSig.getFileFormat(fileFormatIndex), FileFormatHit.HIT_TYPE_POSITIVE_GENERIC_OR_SPECIFIC, internalSig.isSpecific(), "");
-	//				targetFile.addHit(fileHit);
-	//			}
-	//		}
-	//	}
-
 }
