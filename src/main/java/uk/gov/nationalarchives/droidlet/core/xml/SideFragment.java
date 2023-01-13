@@ -15,10 +15,7 @@ import org.xml.sax.Attributes;
 /**
  * A SideFragment is any fragment of a subsequence which cannot be searched for using the BoyerHooreHorspool algorithm. Typically, this means parts of the subsequence with gaps {n-m}, and alternatives (A|B|C).
  *
- * <p>
  * A subsequence is defined by the longest anchoring sequence which can be searched for, with any side fragments to the left and right of it checked for after the anchoring sequence is found.
- * </p>
- *
  */
 public abstract class SideFragment extends SimpleElement
 {
@@ -41,12 +38,19 @@ public abstract class SideFragment extends SimpleElement
 
 	//	private static final SequenceMatcherCompiler EXPRESSION_COMPILER = new SequenceMatcherCompiler();
 
-	private int myPosition;
-	private int myMinOffset;
-	private int myMaxOffset;
+	private final int myPosition;
+	private final int myMinOffset;
+	private final int myMaxOffset;
 	//	private SequenceMatcher matcher;
 	//	private Searcher searcher;
 	private boolean isInvalidFragment;
+
+	protected SideFragment(SideFragmentBuilder sideFragmentBuilder)
+	{
+		myMaxOffset = sideFragmentBuilder.maxOffset;
+		myMinOffset = sideFragmentBuilder.minOffset;
+		myPosition = sideFragmentBuilder.position;
+	}
 
 	//
 	//

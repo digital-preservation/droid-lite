@@ -4,7 +4,7 @@ import org.xml.sax.Attributes;
 
 public class InternalSignatureID extends SimpleElement
 {
-	public static class InternalSignatureIDBuilder extends SimpleElementBuilder
+	static class InternalSignatureIDBuilder extends SimpleElementBuilder
 	{
 		private String value;
 

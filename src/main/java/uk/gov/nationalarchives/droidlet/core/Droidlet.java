@@ -1,9 +1,7 @@
 package uk.gov.nationalarchives.droidlet.core;
 
-import java.io.IOException;
 import java.io.InputStream;
 
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.xml.sax.Attributes;
@@ -12,13 +10,12 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import uk.gov.nationalarchives.droidlet.core.xml.FFSignatureFile;
 import uk.gov.nationalarchives.droidlet.core.xml.FFSignatureFile.FFSignatureFileBuilder;
-import uk.gov.nationalarchives.droidlet.core.xml.SimpleElement.SimpleElementBuilder;
 
 public class Droidlet
 {
-	private FFSignatureFile ffSignatureFile;
+	private final FFSignatureFile ffSignatureFile;
 
-	void loadPronomFileFormatSpecifications(InputStream xmlInputStream) throws SAXException, IOException, ParserConfigurationException
+	public Droidlet(InputStream xmlInputStream) throws Exception
 	{
 		class SaxHandler extends DefaultHandler
 		{
@@ -55,12 +52,14 @@ public class Droidlet
 		// Trigger the parse phase
 		final SaxHandler saxHandler = new SaxHandler();
 		SAXParserFactory.newInstance().newSAXParser().parse(xmlInputStream, saxHandler);
+		xmlInputStream.close();
 
 		// Trigger the build phase
 		ffSignatureFile = saxHandler.rootBuilder.build();
+	}
 
-		xmlInputStream.close();
-
-		SimpleElementBuilder.outputAttributes();
+	public void runFileFormatIdentification(ByteReader byteReader)
+	{
+		ffSignatureFile.runFileFormatIdentification(byteReader);
 	}
 }

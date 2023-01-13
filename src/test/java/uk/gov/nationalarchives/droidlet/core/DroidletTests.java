@@ -24,9 +24,9 @@ public class DroidletTests
 
 		try
 		{
-			new Droidlet().loadPronomFileFormatSpecifications(inputStream);
+			new Droidlet(inputStream);
 		}
-		catch (Exception exception)
+		catch (final Exception exception)
 		{
 			exception.printStackTrace();
 		}
